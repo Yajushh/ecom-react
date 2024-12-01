@@ -1,37 +1,46 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose"); // Import mongoose
 
-// Define the Order schema
 const OrderSchema = new mongoose.Schema({
-  userId: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true, // Ensure userId is provided
+    ref: "User",
+    required: true,
   },
-  products: [
+  items: [
     {
-      productId: {
+      product: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true, // Ensure productId is provided
+        ref: "Product",
+        required: true,
       },
       quantity: {
         type: Number,
         required: true,
-        min: 1, // Ensure quantity is at least 1
+        min: 1,
+      },
+      price: {
+        type: Number,
+        required: true,
       },
     },
   ],
   totalAmount: {
     type: Number,
     required: true,
-    min: 0, // Ensure totalAmount is non-negative
   },
   status: {
     type: String,
-    enum: ['pending', 'paid', 'shipped', 'completed', 'cancelled'], // Allow only predefined statuses
-    default: 'pending', // Default status is 'pending'
+    enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
+    default: "Pending",
   },
-}, { timestamps: true }); // Automatically adds createdAt and updatedAt fields
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-// Create the Order model
-module.exports = mongoose.model('Order', OrderSchema);
+module.exports = mongoose.model("Order", OrderSchema);

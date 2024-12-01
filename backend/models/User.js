@@ -1,12 +1,10 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
-// Create a schema for User
-const userSchema = new mongoose.Schema({
-  username: {
+const UserSchema = new mongoose.Schema({
+  name: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
   },
   email: {
@@ -14,40 +12,33 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     lowercase: true,
-    validate: {
-      validator: (v) => /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(v),
-      message: 'Please enter a valid email address',
-    },
+    match: [/.+\@.+\..+/, "Invalid email address"],
   },
   password: {
     type: String,
     required: true,
     minlength: 6,
   },
+  role: {
+    type: String,
+    enum: ["customer", "admin"],
+    default: "customer",
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
-}, { timestamps: true }); // Automatically add createdAt and updatedAt fields
-
-// Middleware to hash the password before saving the user
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next(); // If password is not modified, skip hashing
-  try {
-    const salt = await bcrypt.genSalt(10); // Generate salt
-    this.password = await bcrypt.hash(this.password, salt); // Hash the password
-    next();
-  } catch (err) {
-    next(err); // Pass any errors to the next middleware
-  }
 });
 
-// Method to compare passwords during login
-userSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password); // Compare password with hashed password
+UserSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+UserSchema.methods.comparePassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
 };
 
-// Create a model for User based on the schema
-const User = mongoose.model('User', userSchema);
-
-module.exports = User;
+module.exports = mongoose.model("User", UserSchema);
